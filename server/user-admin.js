@@ -20,7 +20,7 @@ export function createUserAdminHandler(config){return async(req,res)=>{
    const rows=[];for(const p of profiles.body){const u=await api('/auth/v1/admin/users/'+p.usuario_id);if(!u.response.ok)return reply(502,'No se pudieron obtener las cuentas de acceso.');rows.push({id:p.usuario_id,nombre:p.nombre,rol:p.rol,email:u.body.email||'',activo:p.activo});}return reply(200,'',rows);
   }
   if(!['POST','PUT','DELETE'].includes(req.method))return reply(405,'Método no permitido.');
-  if(req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`)return reply(403,'Origen no autorizado.');
+  if(req.headers.origin){let origin;try{origin=new URL(req.headers.origin)}catch{return reply(403,'Origen no autorizado.')}const host=req.headers.host||'';if(origin.host!==host||!['https:','http:'].includes(origin.protocol))return reply(403,'Origen no autorizado.');}
   if(req.method==='DELETE'){
    if(!id)return reply(400,'Selecciona un usuario.');if(id===me.id)return reply(400,'No puedes eliminar tu propia cuenta.');
    const target=await api('/rest/v1/perfiles_legal?select=usuario_id&usuario_id=eq.'+id);if(!target.response.ok||!Array.isArray(target.body)||target.body.length!==1)return reply(404,'Usuario de Legal no encontrado.');
